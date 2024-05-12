@@ -1,8 +1,14 @@
 package cn.maiaimei.commons.lang.constants;
 
-public final class NumericConstants {
+/**
+ * Miscellaneous {@link Number} constants.
+ */
+public final class NumberConstants {
 
-  private NumericConstants() {
+  /**
+   * Private constructors ensure that classes cannot be instantiated
+   */
+  private NumberConstants() {
     throw new UnsupportedOperationException();
   }
 

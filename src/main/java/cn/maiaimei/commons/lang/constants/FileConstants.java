@@ -1,6 +1,18 @@
 package cn.maiaimei.commons.lang.constants;
 
-public class FileConstants {
+import java.io.File;
+
+/**
+ * Miscellaneous {@link File} constants.
+ */
+public final class FileConstants {
+
+  /**
+   * Private constructors ensure that classes cannot be instantiated
+   */
+  private FileConstants() {
+    throw new UnsupportedOperationException();
+  }
 
   public static final String TXT = "txt";
   public static final String JSON = "json";

@@ -1,7 +1,13 @@
 package cn.maiaimei.commons.lang.constants;
 
+/**
+ * Miscellaneous {@link String} constants.
+ */
 public final class StringConstants {
 
+  /**
+   * Private constructors ensure that classes cannot be instantiated
+   */
   private StringConstants() {
     throw new UnsupportedOperationException();
   }
@@ -30,6 +36,8 @@ public final class StringConstants {
   public static final String HYPHEN = "-";
   public static final String UNDERLINE = "_";
   public static final String VERTICAL_LINE = "|";
+  public static final String SLASH = "/";
+  public static final String BACKSLASH = "\\";
   public static final String ARROW = "->";
 
 }
