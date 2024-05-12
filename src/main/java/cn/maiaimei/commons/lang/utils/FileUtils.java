@@ -119,6 +119,34 @@ public final class FileUtils {
   }
 
   /**
+   * Create a new file by the given {@code pathname}
+   *
+   * @param pathname the pathname to create, must not be {@code null}
+   * @return a file
+   */
+  public static File createFile(String... names) {
+    notNull(names, "names must not be null");
+    try {
+      final File file = getFile(names);
+      createParentDirectories(file);
+      Files.createFile(file.toPath());
+      return file;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Construct a file from the set of name elements.
+   *
+   * @param names the name elements.
+   * @return the file.
+   */
+  public static File getFile(final String... names) {
+    return org.apache.commons.io.FileUtils.getFile(names);
+  }
+
+  /**
    * Get an existing file or create a new file by the given {@code pathname}
    *
    * @param pathname the pathname to get or create, must not be {@code null}
@@ -130,6 +158,7 @@ public final class FileUtils {
     try {
       Path path = Paths.get(pathname);
       if (!Files.exists(path)) {
+        createParentDirectories(path.toFile());
         Files.createFile(path);
       }
       return path.toFile();
@@ -145,7 +174,7 @@ public final class FileUtils {
    * @return a file
    */
   public static File getOrCreateFile(final String... names) {
-    final File file = org.apache.commons.io.FileUtils.getFile(names);
+    final File file = getFile(names);
     if (!file.exists()) {
       try {
         Files.createFile(file.toPath());
@@ -154,6 +183,32 @@ public final class FileUtils {
       }
     }
     return file;
+  }
+
+  /**
+   * Creates all parent directories for a Path object.
+   *
+   * @param path the path that may need parents.
+   * @return the parent directory, or {@code null} if the given path does not name a parent
+   */
+  public static File createParentDirectories(final Path path) {
+    notNull(path, "path must not be null");
+    return createParentDirectories(path.toFile());
+  }
+
+  /**
+   * Creates all parent directories for a File object.
+   *
+   * @param file the file that may need parents.
+   * @return the parent directory, or {@code null} if the given file does not name a parent
+   */
+  public static File createParentDirectories(final File file) {
+    notNull(file, "file must not be null");
+    try {
+      return org.apache.commons.io.FileUtils.createParentDirectories(file);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
