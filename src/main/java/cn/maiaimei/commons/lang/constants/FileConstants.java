@@ -15,6 +15,7 @@ public final class FileConstants {
   }
 
   public static final String TXT = "txt";
+  public static final String CSV = "csv";
   public static final String JSON = "json";
   public static final String DOC = "doc";
   public static final String DOCX = "docx";

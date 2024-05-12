@@ -3,6 +3,7 @@ package cn.maiaimei.commons.lang.utils;
 import static org.springframework.util.Assert.hasText;
 import static org.springframework.util.Assert.notNull;
 
+import cn.maiaimei.commons.lang.constants.StringConstants;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,6 +13,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Miscellaneous {@link File} utility methods.
@@ -115,7 +121,7 @@ public final class FileUtils {
   /**
    * Get an existing file or create a new file by the given {@code pathname}
    *
-   * @param pathname the pathname to convert, must not be {@code null}
+   * @param pathname the pathname to get or create, must not be {@code null}
    * @return a file
    */
   public static File getOrCreateFile(String pathname) {
@@ -133,9 +139,44 @@ public final class FileUtils {
   }
 
   /**
+   * Get an existing file or create a new file by the given {@code names}
+   *
+   * @param names the names to get or create, must not be {@code null}
+   * @return a file
+   */
+  public static File getOrCreateFile(final String... names) {
+    final File file = org.apache.commons.io.FileUtils.getFile(names);
+    if (!file.exists()) {
+      try {
+        Files.createFile(file.toPath());
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return file;
+  }
+
+  /**
+   * Get an existing directory or create a new directory by the given {@code names}
+   *
+   * @param names the names to get or create, must not be {@code null}
+   * @return a directory
+   */
+  public static File getOrCreateDirectory(final String... names) {
+    final File file = org.apache.commons.io.FileUtils.getFile(names);
+    if (!file.exists()) {
+      if (!file.mkdirs()) {
+        throw new RuntimeException(
+            String.format("Directory %s created failed", file.getAbsolutePath()));
+      }
+    }
+    return file;
+  }
+
+  /**
    * Convert the specified file to a byte array
    *
-   * @param file the file to convert, must not be {@code null}
+   * @param file the file to get byte array, must not be {@code null}
    * @return a byte array
    */
   public static byte[] getBytes(File file) {
@@ -153,7 +194,7 @@ public final class FileUtils {
   /**
    * Convert the specified file to a byte array
    *
-   * @param pathname the pathname to convert, must not be {@code null}
+   * @param pathname the pathname to get byte array, must not be {@code null}
    * @return a byte array
    */
   public static byte[] getBytes(String pathname) {
@@ -169,5 +210,122 @@ public final class FileUtils {
     return bytes;
   }
 
+  /**
+   * Get the file name by the given {@code type}, {@code name} and {@code paths}
+   *
+   * @param type  the file type without prefix dot, for example: pdf
+   * @param name  the file name without file extension
+   * @param paths the file paths
+   * @return the file name
+   */
+  public static String getFileName(String type, String name, String... paths) {
+    hasText(type,
+        "type must not be null and must contain at least one non-whitespace character");
+    hasText(name,
+        "name must not be null and must contain at least one non-whitespace character");
+    notNull(paths, "paths must not be null");
+    final String pathname = String.format("%s%s%s%s%s",
+        StringUtils.concat(File.separator, paths),
+        File.separator,
+        name,
+        StringConstants.DOT,
+        type);
+    return normalizePath(pathname);
+  }
+
+  /**
+   * Normalize the path
+   *
+   * @param pathname the pathname to normalize, must not be {@code null}
+   * @return the normalize path
+   */
+  public static String normalizePath(String pathname) {
+    hasText(pathname,
+        "pathname must not be null and must contain at least one non-whitespace character");
+    final String path = StringUtils.cleanPath(pathname);
+    return path.replaceAll("/+", "/");
+  }
+
+  /**
+   * rename file from {@code src} to {@code dest}
+   *
+   * @param src  the source file name
+   * @param dest the destination file name
+   * @return true if and only if the renaming succeeded; false otherwise
+   */
+  public static boolean renameTo(String src, String dest) {
+    final File srcFile = new File(src);
+    final File destFile = new File(dest);
+    return srcFile.renameTo(destFile);
+  }
+
+  /**
+   * Returns a list of file in the given path
+   *
+   * @param path the path to list files
+   * @return a list of file
+   */
+  public static List<File> listFiles(String path) {
+    final File file = new File(path);
+    if (file.exists() && file.isDirectory()) {
+      final File[] files = file.listFiles();
+      if (Objects.nonNull(files)) {
+        return Arrays.stream(files).collect(Collectors.toList());
+      }
+    }
+    return Collections.emptyList();
+  }
+
+  /**
+   * Constructs a pathname from the set of path elements.
+   *
+   * @param paths the path elements.
+   * @return the pathname.
+   */
+  public static String getPath(String... paths) {
+    final String path = StringUtils.concat(File.separator, paths);
+    return normalizePath(path);
+  }
+
+  /**
+   * Deletes a directory recursively.
+   *
+   * @param directory directory to delete
+   */
+  public static void deleteDirectory(final File directory) {
+    try {
+      org.apache.commons.io.FileUtils.deleteDirectory(directory);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Moves a file preserving attributes.
+   *
+   * @param srcFile  the file to be moved.
+   * @param destFile the destination file.
+   */
+  public static void moveFile(final String srcFile, final String destFile) {
+    try {
+      org.apache.commons.io.FileUtils.moveFile(getOrCreateFile(srcFile), getOrCreateFile(destFile));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Moves a file preserving attributes.
+   *
+   * @param srcFile  the file to be moved.
+   * @param destFile the destination file.
+   */
+  public static void moveFile(final File srcFile, final File destFile) {
+    try {
+      org.apache.commons.io.FileUtils.moveFile(srcFile, destFile);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
 }

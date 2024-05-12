@@ -110,4 +110,14 @@ public final class StringUtils {
     return org.springframework.util.StringUtils.trimTrailingWhitespace(str);
   }
 
+  /**
+   * Normalize the path by suppressing sequences like "path/.." and inner simple dots.
+   *
+   * @param path the original path
+   * @return the normalized path
+   */
+  public static String cleanPath(String path) {
+    return org.springframework.util.StringUtils.cleanPath(path);
+  }
+
 }
