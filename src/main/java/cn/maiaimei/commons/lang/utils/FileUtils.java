@@ -1,10 +1,8 @@
 package cn.maiaimei.commons.lang.utils;
 
-import static org.springframework.util.Assert.hasText;
-import static org.springframework.util.Assert.notNull;
-
 import cn.maiaimei.commons.lang.constants.FileExtensionEnum;
 import cn.maiaimei.commons.lang.constants.StringConstants;
+import cn.maiaimei.commons.lang.exception.FileSystemOperationException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 /**
  * Miscellaneous {@link File} utility methods.
@@ -37,14 +37,12 @@ public final class FileUtils {
    * @return the classpath file
    */
   public static File getClassPathFile(String name) {
-    hasText(name,
+    Assert.hasText(name,
         "name must not be null and must contain at least one non-whitespace character");
     URL url = FileUtils.class.getClassLoader().getResource(name);
     notNull(url, "classpath file does not exist");
     final File file = getFile(url.getFile());
-    if (!file.exists()) {
-      notNull(url, "classpath file does not exist");
-    }
+    isTrue(file.exists(), "classpath file does not exist");
     return file;
   }
 
@@ -57,27 +55,28 @@ public final class FileUtils {
    * @return the classpath file contents, never {@code null}
    */
   public static String readClassPathFileToString(String name) {
-    hasText(name,
+    Assert.hasText(name,
         "name must not be null and must contain at least one non-whitespace character");
     final File file = getClassPathFile(name);
     return readFileToString(file);
   }
 
   /**
-   * Create a new file by the given {@code names}
+   * Create a new file by the given names
    *
    * @param names the name elements, must not be {@code null}
    * @return a new file
    */
   public static File createFile(String... names) {
-    notNull(names, "names must not be null");
+    Assert.notNull(names, "names must not be null");
     try {
       final File file = getFile(names);
       createParentDirectories(file);
+      isTrue(!Files.exists(file.toPath()), "File '" + file + "' already exist.");
       Files.createFile(file.toPath());
       return file;
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new FileSystemOperationException(e);
     }
   }
 
@@ -92,7 +91,7 @@ public final class FileUtils {
   }
 
   /**
-   * Get the file name by the given {@code type}, {@code name} and {@code paths}
+   * Get the file name by the given type, name and paths
    *
    * @param type  the file type, refer to {@link FileExtensionEnum#getExtension()}
    * @param name  the file name without file extension
@@ -100,11 +99,11 @@ public final class FileUtils {
    * @return the file name
    */
   public static String getFileName(String type, String name, String... paths) {
-    hasText(type,
+    Assert.hasText(type,
         "type must not be null and must contain at least one non-whitespace character");
-    hasText(name,
+    Assert.hasText(name,
         "name must not be null and must contain at least one non-whitespace character");
-    notNull(paths, "paths must not be null");
+    Assert.notNull(paths, "paths must not be null");
     final String pathname = String.format("%s%s%s%s%s",
         StringUtils.concat(File.separator, paths),
         File.separator,
@@ -121,7 +120,7 @@ public final class FileUtils {
    * @return the pathname.
    */
   public static String getFilePath(String... paths) {
-    notNull(paths, "paths must not be null");
+    Assert.notNull(paths, "paths must not be null");
     final String path = StringUtils.concat(File.separator, paths);
     return normalizePath(path);
   }
@@ -133,14 +132,14 @@ public final class FileUtils {
    * @return a file
    */
   public static File getOrCreateFile(final String... names) {
-    notNull(names, "names must not be null");
+    Assert.notNull(names, "names must not be null");
     final File file = getFile(names);
     if (Objects.nonNull(file) && !file.exists()) {
       try {
         createParentDirectories(file);
         Files.createFile(file.toPath());
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new FileSystemOperationException(e);
       }
     }
     return file;
@@ -153,13 +152,13 @@ public final class FileUtils {
    * @return a byte array
    */
   public static byte[] getBytes(File file) {
-    notNull(file, "file must not be null");
+    Assert.notNull(file, "file must not be null");
     byte[] bytes;
     try (FileInputStream fis = new FileInputStream(file)) {
       bytes = new byte[fis.available()];
       fis.read(bytes);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new FileSystemOperationException(e);
     }
     return bytes;
   }
@@ -171,14 +170,14 @@ public final class FileUtils {
    * @return a byte array
    */
   public static byte[] getBytes(String name) {
-    hasText(name,
+    Assert.hasText(name,
         "name must not be null and must contain at least one non-whitespace character");
     byte[] bytes;
     try (FileInputStream fis = new FileInputStream(name)) {
       bytes = new byte[fis.available()];
       fis.read(bytes);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new FileSystemOperationException(e);
     }
     return bytes;
   }
@@ -192,7 +191,7 @@ public final class FileUtils {
    * @return the file contents, never {@code null}
    */
   public static String readFileToString(File file) {
-    notNull(file, "file must not be null");
+    Assert.notNull(file, "file must not be null");
     return readFileToString(file, StandardCharsets.UTF_8);
   }
 
@@ -206,12 +205,12 @@ public final class FileUtils {
    * @return the file contents, never {@code null}
    */
   public static String readFileToString(final File file, final Charset charset) {
-    notNull(file, "file must not be null");
-    notNull(charset, "charset must not be null");
+    Assert.notNull(file, "file must not be null");
+    Assert.notNull(charset, "charset must not be null");
     try {
       return org.apache.commons.io.FileUtils.readFileToString(file, charset);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new FileSystemOperationException(e);
     }
   }
 
@@ -224,16 +223,16 @@ public final class FileUtils {
    */
   public static void writeStringToFile(final String name, final String data,
       final Charset charset) {
-    hasText(name,
+    Assert.hasText(name,
         "name must not be null and must contain at least one non-whitespace character");
-    hasText(data,
+    Assert.hasText(data,
         "data must not be null and must contain at least one non-whitespace character");
-    notNull(charset, "charset must not be null");
+    Assert.notNull(charset, "charset must not be null");
     final File file = getOrCreateFile(name);
     try {
       org.apache.commons.io.FileUtils.writeStringToFile(file, data, charset);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new FileSystemOperationException(e);
     }
   }
 
@@ -241,14 +240,14 @@ public final class FileUtils {
    * Creates all parent directories for a File object.
    *
    * @param file the file that may need parents.
-   * @return the parent directory, or {@code null} if the given file does not name a parent
    */
-  public static File createParentDirectories(final File file) {
-    notNull(file, "file must not be null");
-    try {
-      return org.apache.commons.io.FileUtils.createParentDirectories(file);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+  public static void createParentDirectories(final File file) {
+    Assert.notNull(file, "file must not be null");
+    if (Objects.nonNull(file.getParentFile())
+        && Files.isDirectory(file.getParentFile().toPath())
+        && !Files.exists(file.getParentFile().toPath())) {
+      isTrue(file.getParentFile().mkdirs(),
+          "Cannot create directory '" + file.getParentFile() + "'.");
     }
   }
 
@@ -261,7 +260,7 @@ public final class FileUtils {
     try {
       org.apache.commons.io.FileUtils.deleteDirectory(directory);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new FileSystemOperationException(e);
     }
   }
 
@@ -274,10 +273,7 @@ public final class FileUtils {
   public static File getOrCreateDirectory(final String... names) {
     final File file = getFile(names);
     if (!file.exists()) {
-      if (!file.mkdirs()) {
-        throw new RuntimeException(
-            String.format("Directory %s created failed", file.getAbsolutePath()));
-      }
+      isTrue(file.mkdirs(), String.format("Directory %s created failed", file.getAbsolutePath()));
     }
     return file;
   }
@@ -332,7 +328,7 @@ public final class FileUtils {
     try {
       org.apache.commons.io.FileUtils.moveFile(srcFile, destFile);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new FileSystemOperationException(e);
     }
   }
 
@@ -343,10 +339,22 @@ public final class FileUtils {
    * @return the normalize path
    */
   public static String normalizePath(String name) {
-    hasText(name,
+    Assert.hasText(name,
         "name must not be null and must contain at least one non-whitespace character");
     final String path = StringUtils.cleanPath(name);
     return path.replaceAll("/+", "/");
+  }
+
+  public static void notNull(@Nullable Object object, String message) {
+    if (object == null) {
+      throw new FileSystemOperationException(message);
+    }
+  }
+
+  public static void isTrue(boolean expression, String message) {
+    if (!expression) {
+      throw new FileSystemOperationException(message);
+    }
   }
 
 }
