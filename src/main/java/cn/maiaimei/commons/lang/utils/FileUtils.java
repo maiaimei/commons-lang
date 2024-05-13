@@ -31,7 +31,7 @@ public final class FileUtils {
   }
 
   /**
-   * Get the classpath file by the given name
+   * Get the classpath file by the given name.
    *
    * @param name the classpath file name, must not be {@code null}
    * @return the classpath file
@@ -62,7 +62,7 @@ public final class FileUtils {
   }
 
   /**
-   * Create a new file by the given names
+   * Create a new file by the given names.
    *
    * @param names the name elements, must not be {@code null}
    * @return a new file
@@ -91,10 +91,10 @@ public final class FileUtils {
   }
 
   /**
-   * Get the file name by the given type, name and paths
+   * Get the file name by the given type, name and paths.
    *
    * @param type  the file type, refer to {@link FileExtensionEnum#getExtension()}
-   * @param name  the file name without file extension
+   * @param name  the file name, without file extension
    * @param paths the file paths
    * @return the file name
    */
@@ -126,7 +126,7 @@ public final class FileUtils {
   }
 
   /**
-   * Get an existing file or create a new file by the given {@code names}
+   * Get an existing file or create a new file by the given names.
    *
    * @param names the names to get or create, must not be {@code null}
    * @return a file
@@ -146,7 +146,7 @@ public final class FileUtils {
   }
 
   /**
-   * Convert the specified file to a byte array
+   * Convert the specified file to a byte array.
    *
    * @param file the file to get byte array, must not be {@code null}
    * @return a byte array
@@ -164,7 +164,7 @@ public final class FileUtils {
   }
 
   /**
-   * Convert the specified file to a byte array
+   * Convert the specified file to a byte array.
    *
    * @param name the name to get byte array, must not be {@code null}
    * @return a byte array
@@ -265,7 +265,7 @@ public final class FileUtils {
   }
 
   /**
-   * Get an existing directory or create a new directory by the given {@code names}
+   * Get an existing directory or create a new directory by the given names.
    *
    * @param names the names to get or create, must not be {@code null}
    * @return a directory
@@ -279,7 +279,7 @@ public final class FileUtils {
   }
 
   /**
-   * Returns a list of file in the given path
+   * Returns a list of file in the given path.
    *
    * @param path the path to list files
    * @return a list of file
@@ -296,7 +296,7 @@ public final class FileUtils {
   }
 
   /**
-   * rename file from {@code src} to {@code dest}
+   * Rename file from src to dest.
    *
    * @param src  the source file name
    * @param dest the destination file name
@@ -333,24 +333,39 @@ public final class FileUtils {
   }
 
   /**
-   * Normalize the path
+   * Normalize the path by suppressing sequences like "path/.." and inner simple dots.
    *
-   * @param name the name to normalize, must not be {@code null}
+   * @param path the name to normalize, must not be {@code null}
    * @return the normalize path
    */
-  public static String normalizePath(String name) {
-    Assert.hasText(name,
+  public static String normalizePath(String path) {
+    Assert.hasText(path,
         "name must not be null and must contain at least one non-whitespace character");
-    final String path = StringUtils.cleanPath(name);
-    return path.replaceAll("/+", "/");
+    final String cleanPath = StringUtils.cleanPath(path);
+    return cleanPath.replaceAll("/+", "/");
   }
 
+  /**
+   * Assert that an object is not {@code null}.
+   *
+   * @param object  the object to check
+   * @param message the exception message to use if the assertion fails
+   * @throws FileSystemOperationException if the object is {@code null}
+   */
   public static void notNull(@Nullable Object object, String message) {
     if (object == null) {
       throw new FileSystemOperationException(message);
     }
   }
 
+  /**
+   * Assert a boolean expression, throwing an {@code FileSystemOperationException} if the expression
+   * evaluates to {@code false}.
+   *
+   * @param expression a boolean expression
+   * @param message    the exception message to use if the assertion fails
+   * @throws FileSystemOperationException if {@code expression} is {@code false}
+   */
   public static void isTrue(boolean expression, String message) {
     if (!expression) {
       throw new FileSystemOperationException(message);
