@@ -252,11 +252,48 @@ public final class FileUtils {
   }
 
   /**
+   * Cleans a directory without deleting it.
+   *
+   * @param path path to clean
+   */
+  public static void cleanDirectory(String path) {
+    Assert.hasText(path,
+        "path must not be null and must contain at least one non-whitespace character");
+    cleanDirectory(getFile(path));
+  }
+
+  /**
+   * Cleans a directory without deleting it.
+   *
+   * @param directory directory to clean
+   */
+  public static void cleanDirectory(final File directory) {
+    Assert.notNull(directory, "directory must not be null");
+    try {
+      org.apache.commons.io.FileUtils.cleanDirectory(directory);
+    } catch (IOException e) {
+      throw new FileSystemOperationException(e);
+    }
+  }
+
+  /**
+   * Deletes a directory recursively.
+   *
+   * @param path directory to delete
+   */
+  public static void deleteDirectory(String path) {
+    Assert.hasText(path,
+        "path must not be null and must contain at least one non-whitespace character");
+    deleteDirectory(getFile(path));
+  }
+
+  /**
    * Deletes a directory recursively.
    *
    * @param directory directory to delete
    */
   public static void deleteDirectory(final File directory) {
+    Assert.notNull(directory, "directory must not be null");
     try {
       org.apache.commons.io.FileUtils.deleteDirectory(directory);
     } catch (IOException e) {
