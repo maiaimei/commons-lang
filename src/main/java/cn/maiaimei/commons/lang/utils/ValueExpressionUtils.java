@@ -33,6 +33,11 @@ public final class ValueExpressionUtils {
   private static final Pattern KEY_PATTERN_SUBFIX = Pattern.compile("\\}");
 
   /**
+   * The key format
+   */
+  private static final String KEY_FORMAT = "${%s}";
+
+  /**
    * The key: currentTimestamp
    */
   private static final String KEY_CURRENTTIMESTAMP = "currentTimestamp";
@@ -55,15 +60,32 @@ public final class ValueExpressionUtils {
   }
 
   /**
-   * Replace all ${key} by actual value, where key is an alphabet, number, etc
+   * Replace placeholders with real values
    *
    * @param expressionString the expression string to use
-   * @return a new string without ${key}
+   * @return a new string without placeholder
    */
   public static String parse(String expressionString) {
     final List<String> keys = findKeys(expressionString);
     final Map<String, String> params = resolveKeys(keys);
     for (Entry<String, String> entry : params.entrySet()) {
+      expressionString = expressionString.replace(entry.getKey(), entry.getValue());
+    }
+    return expressionString;
+  }
+
+  /**
+   * Replace placeholders with real values
+   *
+   * @param expressionString the expression string to use
+   * @param params           the params to use
+   * @return a new string without placeholder
+   */
+  public static String parse(String expressionString, Map<String, String> params) {
+    final List<String> keys = findKeys(expressionString);
+    final Map<String, String> allParams = resolveKeys(keys);
+    params.forEach((key, value) -> allParams.put(String.format(KEY_FORMAT, key), value));
+    for (Entry<String, String> entry : allParams.entrySet()) {
       expressionString = expressionString.replace(entry.getKey(), entry.getValue());
     }
     return expressionString;
