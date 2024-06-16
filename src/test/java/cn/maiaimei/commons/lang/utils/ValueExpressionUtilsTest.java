@@ -3,6 +3,7 @@ package cn.maiaimei.commons.lang.utils;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -27,5 +28,18 @@ public class ValueExpressionUtilsTest {
       log.info("{}", ValueExpressionUtils.parse(exp, params));
     }
   }
+
+  @Test
+  public void testParseWithAtomicInteger() {
+    String exp = "trade.12345.${file_remoteFile}"
+        + ".${currentTimestamp->yyyyMMddHHmmssSSS}${serialNumber->%05d}";
+    Map<String, String> params = Maps.newHashMap();
+    AtomicInteger atomicInteger = new AtomicInteger();
+    for (int i = 0; i < 5; i++) {
+      params.put("file_remoteFile", UUID.randomUUID() + ".txt");
+      log.info("{}", ValueExpressionUtils.parse(exp, params, atomicInteger));
+    }
+  }
+
 }
 

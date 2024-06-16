@@ -66,8 +66,19 @@ public final class ValueExpressionUtils {
    * @return a new string without placeholder
    */
   public static String parse(String expressionString) {
+    return parse(expressionString, ATOMIC_INTEGER);
+  }
+
+  /**
+   * Replace placeholders with real values
+   *
+   * @param expressionString the expression string to use
+   * @param atomicInteger    the atomicInteger to use
+   * @return a new string without placeholder
+   */
+  public static String parse(String expressionString, AtomicInteger atomicInteger) {
     final List<String> keys = findKeys(expressionString);
-    final Map<String, String> params = resolveKeys(keys);
+    final Map<String, String> params = resolveKeys(keys, atomicInteger);
     for (Entry<String, String> entry : params.entrySet()) {
       expressionString = expressionString.replace(entry.getKey(), entry.getValue());
     }
@@ -82,8 +93,21 @@ public final class ValueExpressionUtils {
    * @return a new string without placeholder
    */
   public static String parse(String expressionString, Map<String, String> params) {
+    return parse(expressionString, params, ATOMIC_INTEGER);
+  }
+
+  /**
+   * Replace placeholders with real values
+   *
+   * @param expressionString the expression string to use
+   * @param params           the params to use
+   * @param atomicInteger    the atomicInteger to use
+   * @return a new string without placeholder
+   */
+  public static String parse(String expressionString, Map<String, String> params,
+      AtomicInteger atomicInteger) {
     final List<String> keys = findKeys(expressionString);
-    final Map<String, String> allParams = resolveKeys(keys);
+    final Map<String, String> allParams = resolveKeys(keys, atomicInteger);
     params.forEach((key, value) -> allParams.put(String.format(KEY_FORMAT, key), value));
     for (Entry<String, String> entry : allParams.entrySet()) {
       expressionString = expressionString.replace(entry.getKey(), entry.getValue());
@@ -124,17 +148,18 @@ public final class ValueExpressionUtils {
   /**
    * resolve keys
    *
-   * @param keys the list of key to use
+   * @param keys          the list of key to use
+   * @param atomicInteger the atomicInteger to use
    * @return a key value pairs
    */
-  private static Map<String, String> resolveKeys(List<String> keys) {
+  private static Map<String, String> resolveKeys(List<String> keys, AtomicInteger atomicInteger) {
     final Map<String, String> params = Maps.newHashMap();
     for (String key : keys) {
       final String shortKey = extractKey(key);
       if (shortKey.startsWith(KEY_CURRENTTIMESTAMP)) {
         params.put(key, resolveDateTime(shortKey));
       } else if (shortKey.startsWith(KEY_SERIAL_NUMBER)) {
-        params.put(key, resolveSerialNumber(shortKey));
+        params.put(key, resolveSerialNumber(shortKey, atomicInteger));
       }
     }
     return params;
@@ -156,14 +181,15 @@ public final class ValueExpressionUtils {
   /**
    * resolve serial number
    *
-   * @param shortKey the shortKey to use
+   * @param shortKey      the shortKey to use
+   * @param atomicInteger the atomicInteger to use
    * @return the actual value of serial number
    */
-  private static String resolveSerialNumber(String shortKey) {
+  private static String resolveSerialNumber(String shortKey, AtomicInteger atomicInteger) {
     final String[] split = StringUtils.split(shortKey, StringConstants.MAPPING);
     Assert.notNull(split, "Invalid serialNumber key");
     final String format = split[NumberConstants.ONE];
-    return String.format(format, ATOMIC_INTEGER.getAndIncrement());
+    return String.format(format, atomicInteger.getAndIncrement());
   }
 
 }
