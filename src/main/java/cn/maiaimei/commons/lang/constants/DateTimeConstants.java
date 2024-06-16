@@ -13,5 +13,6 @@ public final class DateTimeConstants {
   }
 
   public static final String YYYYMMDDHHMMSSSSS = "yyyyMMddHHmmssSSS";
-  public static final String YYYYMMDDHHMM = "yyyyMMddHHmm";
+  public static final String YYYYMMDDHHMMSS = "yyyyMMddHHmmss";
+  public static final String YYYYMMDD = "yyyyMMdd";
 }

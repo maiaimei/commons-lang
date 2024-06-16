@@ -22,8 +22,18 @@ public final class IdGenerator {
     return new BigDecimal(nextIdString());
   }
 
+  public static BigDecimal nextId(int capacity) {
+    return new BigDecimal(nextIdString(capacity));
+  }
+
   public static String nextIdString() {
     final String serialNumber = String.format("%03d", ATOMIC_INTEGER.getAndIncrement());
+    return String.format("%s%s", FORMATTER.format(LocalDateTime.now()), serialNumber);
+  }
+
+  public static String nextIdString(int capacity) {
+    final String format = "%0" + capacity + "d";
+    final String serialNumber = String.format(format, ATOMIC_INTEGER.getAndIncrement());
     return String.format("%s%s", FORMATTER.format(LocalDateTime.now()), serialNumber);
   }
 

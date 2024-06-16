@@ -38,6 +38,6 @@ public final class StringConstants {
   public static final String VERTICAL_LINE = "|";
   public static final String SLASH = "/";
   public static final String BACKSLASH = "\\";
-  public static final String ARROW = "->";
+  public static final String MAPPING = "->";
 
 }

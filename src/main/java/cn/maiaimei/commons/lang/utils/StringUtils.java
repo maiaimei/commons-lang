@@ -111,6 +111,21 @@ public final class StringUtils {
   }
 
   /**
+   * Split a {@code String} at the first occurrence of the delimiter. Does not include the delimiter
+   * in the result.
+   *
+   * @param toSplit   the string to split (potentially {@code null} or empty)
+   * @param delimiter to split the string up with (potentially {@code null} or empty)
+   * @return a two element array with index 0 being before the delimiter, and index 1 being after
+   * the delimiter (neither element includes the delimiter); or {@code null} if the delimiter wasn't
+   * found in the given input {@code String}
+   */
+  @Nullable
+  public static String[] split(@Nullable String toSplit, @Nullable String delimiter) {
+    return org.springframework.util.StringUtils.split(toSplit, delimiter);
+  }
+
+  /**
    * Normalize the path by suppressing sequences like "path/.." and inner simple dots.
    *
    * @param path the original path
