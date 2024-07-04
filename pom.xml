@@ -16,6 +16,10 @@
     <spring-expression.version>5.3.34</spring-expression.version>
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-io.version>2.11.0</commons-io.version>
+    <jackson.version>2.15.4</jackson.version>
+    <jackson.version.annotations>${jackson.version}</jackson.version.annotations>
+    <jackson.version.core>${jackson.version}</jackson.version.core>
+    <jackson.version.databind>${jackson.version}</jackson.version.databind>
     <guava.version>32.1.2-jre</guava.version>
     <lombok.version>1.18.30</lombok.version>
     <logback-classic.version>1.3.14</logback-classic.version>
@@ -53,6 +57,24 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>${commons-io.version}</version>
+    </dependency>
+    <!-- 包含标准的Jackson注解 -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${jackson.version.annotations}</version>
+    </dependency>
+    <!-- 定义底层处理流的API：JsonPaser和JsonGenerator等，并包含特定于json的实现。 -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.version.core}</version>
+    </dependency>
+    <!-- 在streaming包上实现数据绑定(和对象序列化)支持；它依赖于jackson-annotations和jackson-core，也是Jackson的高层API(如ObjectMapper)所在的模块 -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version.databind}</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>

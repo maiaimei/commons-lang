@@ -31,38 +31,7 @@ public final class FileUtils {
   }
 
   /**
-   * Get the classpath file by the given name.
-   *
-   * @param name the classpath file name, must not be {@code null}
-   * @return the classpath file
-   */
-  public static File getClassPathFile(String name) {
-    Assert.hasText(name,
-        "name must not be null and must contain at least one non-whitespace character");
-    URL url = FileUtils.class.getClassLoader().getResource(name);
-    notNull(url, "classpath file does not exist");
-    final File file = getFile(url.getFile());
-    isTrue(file.exists(), "classpath file does not exist");
-    return file;
-  }
-
-  /**
-   * Reads the contents of a classpath file into a string using the {@code StandardCharsets.UTF_8}.
-   * <p>
-   * The classpath file is always closed.
-   *
-   * @param name the name to read, must not be {@code null}
-   * @return the classpath file contents, never {@code null}
-   */
-  public static String readClassPathFileToString(String name) {
-    Assert.hasText(name,
-        "name must not be null and must contain at least one non-whitespace character");
-    final File file = getClassPathFile(name);
-    return readFileToString(file);
-  }
-
-  /**
-   * Create a new file by the given names.
+   * Create a new and empty file by the given names, throwing an {@code FileSystemOperationException} if the file already exists.
    *
    * @param names the name elements, must not be {@code null}
    * @return a new file
@@ -75,6 +44,71 @@ public final class FileUtils {
       isTrue(!Files.exists(file.toPath()), "File '" + file + "' already exist.");
       Files.createFile(file.toPath());
       return file;
+    } catch (IOException e) {
+      throw new FileSystemOperationException(e);
+    }
+  }
+
+  /**
+   * Creates all parent directories for a File object.
+   *
+   * @param file the file that may need parents.
+   */
+  public static void createParentDirectories(final File file) {
+    Assert.notNull(file, "file must not be null");
+    if (Objects.nonNull(file.getParentFile())
+        && Files.isDirectory(file.getParentFile().toPath())
+        && !Files.exists(file.getParentFile().toPath())) {
+      isTrue(file.getParentFile().mkdirs(),
+          "Cannot create directory '" + file.getParentFile() + "'.");
+    }
+  }
+
+  /**
+   * Deletes a directory recursively.
+   *
+   * @param path directory to delete
+   */
+  public static void deleteDirectory(String path) {
+    Assert.hasText(path,
+        "path must not be null and must contain at least one non-whitespace character");
+    deleteDirectory(getFile(path));
+  }
+
+  /**
+   * Deletes a directory recursively.
+   *
+   * @param directory directory to delete
+   */
+  public static void deleteDirectory(final File directory) {
+    Assert.notNull(directory, "directory must not be null");
+    try {
+      org.apache.commons.io.FileUtils.deleteDirectory(directory);
+    } catch (IOException e) {
+      throw new FileSystemOperationException(e);
+    }
+  }
+
+  /**
+   * Cleans a directory without deleting it.
+   *
+   * @param path path to clean
+   */
+  public static void cleanDirectory(String path) {
+    Assert.hasText(path,
+        "path must not be null and must contain at least one non-whitespace character");
+    cleanDirectory(getFile(path));
+  }
+
+  /**
+   * Cleans a directory without deleting it.
+   *
+   * @param directory directory to clean
+   */
+  public static void cleanDirectory(final File directory) {
+    Assert.notNull(directory, "directory must not be null");
+    try {
+      org.apache.commons.io.FileUtils.cleanDirectory(directory);
     } catch (IOException e) {
       throw new FileSystemOperationException(e);
     }
@@ -183,6 +217,68 @@ public final class FileUtils {
   }
 
   /**
+   * Get the classpath file by the given name.
+   *
+   * @param name the classpath file name, must not be {@code null}
+   * @return the classpath file
+   */
+  public static File getClassPathFile(String name) {
+    Assert.hasText(name,
+        "name must not be null and must contain at least one non-whitespace character");
+    URL url = FileUtils.class.getClassLoader().getResource(name);
+    notNull(url, "classpath file does not exist");
+    final File file = getFile(url.getFile());
+    isTrue(file.exists(), "classpath file does not exist");
+    return file;
+  }
+
+  /**
+   * Get an existing directory or create a new directory by the given names.
+   *
+   * @param names the names to get or create, must not be {@code null}
+   * @return a directory
+   */
+  public static File getOrCreateDirectory(final String... names) {
+    final File file = getFile(names);
+    if (!file.exists()) {
+      isTrue(file.mkdirs(), String.format("Directory %s created failed", file.getAbsolutePath()));
+    }
+    return file;
+  }
+
+  /**
+   * Returns a list of file in the given path.
+   *
+   * @param path the path to list files
+   * @return a list of file
+   */
+  public static List<File> listFiles(String path) {
+    final File file = getFile(path);
+    if (file.exists() && file.isDirectory()) {
+      final File[] files = file.listFiles();
+      if (Objects.nonNull(files)) {
+        return Arrays.stream(files).collect(Collectors.toList());
+      }
+    }
+    return Collections.emptyList();
+  }
+
+  /**
+   * Reads the contents of a classpath file into a string using the {@code StandardCharsets.UTF_8}.
+   * <p>
+   * The classpath file is always closed.
+   *
+   * @param name the name to read, must not be {@code null}
+   * @return the classpath file contents, never {@code null}
+   */
+  public static String readClassPathFileToString(String name) {
+    Assert.hasText(name,
+        "name must not be null and must contain at least one non-whitespace character");
+    final File file = getClassPathFile(name);
+    return readFileToString(file);
+  }
+
+  /**
    * Reads the contents of a file into a string using the {@code StandardCharsets.UTF_8}.
    * <p>
    * The file is always closed.
@@ -234,102 +330,6 @@ public final class FileUtils {
     } catch (IOException e) {
       throw new FileSystemOperationException(e);
     }
-  }
-
-  /**
-   * Creates all parent directories for a File object.
-   *
-   * @param file the file that may need parents.
-   */
-  public static void createParentDirectories(final File file) {
-    Assert.notNull(file, "file must not be null");
-    if (Objects.nonNull(file.getParentFile())
-        && Files.isDirectory(file.getParentFile().toPath())
-        && !Files.exists(file.getParentFile().toPath())) {
-      isTrue(file.getParentFile().mkdirs(),
-          "Cannot create directory '" + file.getParentFile() + "'.");
-    }
-  }
-
-  /**
-   * Cleans a directory without deleting it.
-   *
-   * @param path path to clean
-   */
-  public static void cleanDirectory(String path) {
-    Assert.hasText(path,
-        "path must not be null and must contain at least one non-whitespace character");
-    cleanDirectory(getFile(path));
-  }
-
-  /**
-   * Cleans a directory without deleting it.
-   *
-   * @param directory directory to clean
-   */
-  public static void cleanDirectory(final File directory) {
-    Assert.notNull(directory, "directory must not be null");
-    try {
-      org.apache.commons.io.FileUtils.cleanDirectory(directory);
-    } catch (IOException e) {
-      throw new FileSystemOperationException(e);
-    }
-  }
-
-  /**
-   * Deletes a directory recursively.
-   *
-   * @param path directory to delete
-   */
-  public static void deleteDirectory(String path) {
-    Assert.hasText(path,
-        "path must not be null and must contain at least one non-whitespace character");
-    deleteDirectory(getFile(path));
-  }
-
-  /**
-   * Deletes a directory recursively.
-   *
-   * @param directory directory to delete
-   */
-  public static void deleteDirectory(final File directory) {
-    Assert.notNull(directory, "directory must not be null");
-    try {
-      org.apache.commons.io.FileUtils.deleteDirectory(directory);
-    } catch (IOException e) {
-      throw new FileSystemOperationException(e);
-    }
-  }
-
-  /**
-   * Get an existing directory or create a new directory by the given names.
-   *
-   * @param names the names to get or create, must not be {@code null}
-   * @return a directory
-   */
-  public static File getOrCreateDirectory(final String... names) {
-    final File file = getFile(names);
-    if (!file.exists()) {
-      isTrue(file.mkdirs(), String.format("Directory %s created failed", file.getAbsolutePath()));
-    }
-    return file;
-  }
-
-  /**
-   * Returns a list of file in the given path.
-   *
-   * @param path the path to list files
-   * @return a list of file
-   */
-  public static List<File> listFiles(String path) {
-    final File file = getFile(path);
-    if (file.exists() && file.isDirectory()) {
-      final File[] files = file.listFiles();
-      if (Objects.nonNull(files)) {
-        return Arrays.stream(files).collect(Collectors.toList());
-      }
-    }
-    return Collections.emptyList();
   }
 
   /**
@@ -396,8 +396,7 @@ public final class FileUtils {
   }
 
   /**
-   * Assert a boolean expression, throwing an {@code FileSystemOperationException} if the expression
-   * evaluates to {@code false}.
+   * Assert a boolean expression, throwing an {@code FileSystemOperationException} if the expression evaluates to {@code false}.
    *
    * @param expression a boolean expression
    * @param message    the exception message to use if the assertion fails
